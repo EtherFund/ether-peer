@@ -5,28 +5,66 @@
 - (c) 2014 J.R. Bédard (jrbedard.com)
 */
 
-var gPeerFilter = {};
-var gPeerSort = {};
-
 
 // Init
 $(function () {
 
 	// todo: from url hash
-
-	// get peers
-	etherface.peer('list', {}, function(peers) {
-		console.log(peers);
-		updateTable(peers);
-		//updateChart(peers);
+	getPeers();
+	
+	// FILTER option click
+	$("#filterPeers li a").click(function(e) {
+		e.preventDefault();
+		var filter = $(this).data('val');
+		$("#filterPeers .btn").html($(this).text()+" <span class='caret'></span>");
+		$("#filterPeers .btn").val(filter);
+		getPeers();
+		return true;
 	});
 	
-	// listen to sort/filter input events
+	// SORT option click
+	$("#sortPeers li a").click(function(e) {
+		e.preventDefault();
+		var sort = $(this).data('val');
+		$("#sortPeers .btn").html($(this).text()+ " <span class='caret'></span>");
+		$("#sortPeers .btn").val(sort);
+		getPeers();
+		return true;
+	});
 	
-	//$("#filterPeers a").click
+	// PAGINATION next page, prev page clicks
+	$("#pagination a").click(function(e) {
+		getPeers();
+	});
 	
-	//$("#sortPeers a").click
 });
+
+
+function getPeers() {
+	var args = {};
+	args.filter = $("#filterPeers .btn").data('val');
+	args.sort = $("#sortPeers .btn").data('val');
+	args.start = 0;
+	args.range = 10;
+	
+	// todo: greyingout + loading animation;
+	
+	// get peers
+	etherface.peer('list', args, function(peers) {
+		// todo: stop animation;
+		//console.log(peers);
+		updateTable(peers);
+		
+		var peer = peers[0];
+		$("#lastCrawl").text(peer.last_crawl);
+		$("#lastCrawl").attr('title',peer.last_crawl);
+		$("#lastCrawl").attr('datetime',peer.last_crawl);
+		$("#lastCrawl").timeago(); // WTF??
+		
+		var analytics = peers;
+		updateCharts(analytics);
+	});
+};
 
 
 
@@ -39,11 +77,13 @@ function updateTable(peers) {
 		var peer = peers[p];
 		console.log(peer);
 		
-		var line = "<tr><td>Name</td><td><span>"+peer.publicIp+"<span>:"+peer.port+"</td>";
+		var line = "<tr><td title='"+peer.id+"'>"+peer.clientId+"</td><td><span>"+peer.ip+"<span>:"+peer.port+"</td>";
 		
-		// <td>"+peer.id+"</td>
+		line += "<td><a target='_blank' href='http://www.google.com/maps/place/"+peer.ll[0]+","+peer.ll[1]+"'><i class='fa fa-map-marker fa-lg'></i></a> "+getGeoStr(peer)+"</td>";
 		
-		line += '<td>'+getGeoStr(peer)+'</td>';
+		line += "<td><abbr>"+peer.last_crawl+'</abbr></td>';
+		
+		line += "<td>"+peer.capabilities+"</td>";
 		
 		line += '</tr>';
 		
@@ -52,8 +92,13 @@ function updateTable(peers) {
 }
 
 
-// display peers in chart
-function updateChart(peers) {
+// display analytics chart
+function updateCharts(analytics) {
 	var chart = $("#peerChart");
-	// todo
+	// todo: charts
 }
+
+
+
+
+
