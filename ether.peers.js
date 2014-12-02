@@ -54,6 +54,7 @@ function getPeers() {
 		// todo: stop animation;
 		//console.log(peers);
 		updateTable(peers);
+		
 		$(".timeago").timeago();
 		$(".tooltip").tooltip({});
 		
@@ -121,18 +122,18 @@ function updateTable(peers) {
 // display analytics chart
 function updateCharts(data) {	
 
-	//worldMapPeers(data);
+	//clientsChart(data);
 	
-	clientsChart(data);
+	worldMapPeers(data);
 	
-	console.log(data);
+	//console.log(data);
 }
 
 
 
 // Client Pie Chart
 function clientsChart(data) {
-	console.log(data.clients);
+	//console.log(data.clients);
 	
 	// Create the chart
 	$('#clientsChart').highcharts({
@@ -140,22 +141,22 @@ function clientsChart(data) {
 		    type: 'pie'
 		},
 		title: {
-		    text: 'Ethereum clients market shares for '+data.peerCount+' peers.'
+		    text: 'Ethereum clients market share.'
 		},
 		subtitle: {
-		    text: 'Click the slices to view versions.'
+			text: 'For <b>'+data.peerCount+' peers</b> crawled in the last hour.'// Click the slices to view versions.'
 		},
 		plotOptions: {
 		    series: {
 		        dataLabels: {
 		            enabled: true,
-		            format: '{point.name}: {point.y:.1f}%'
+		            format: '{point.name}: {point.percentage:.1f}%'
 		        }
 		    }
 		},
 		tooltip: {
-		    headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
-		    pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b> of total<br/>'
+		    headerFormat: '<span style="font-size:11px">Ethereum client:</span><br>',
+		    pointFormat: '<span style="color:{point.color}">{point.name}</span><br><b>{point.percentage:.2f}%</b> of total ({point.y} of '+data.peerCount+')<br/>'
 		},
 		series: [{
 		    name: 'Clients',
@@ -169,8 +170,13 @@ function clientsChart(data) {
 }
 
 
+
 // World Peers
-function worldMapPeers(data) {
+function worldMapPeers(analytics) {
+	//console.log(analytics.countries);
+	var data = analytics.countries;
+	console.log(data);
+	
     // Base path to maps
     var baseMapPath = "http://code.highcharts.com/mapdata/",
         showDataLabels = false, // Switch for data labels enabled/disabled
@@ -178,20 +184,22 @@ function worldMapPeers(data) {
         searchText,
         mapOptions = '';
 
+	
     // Populate dropdown menus and turn into jQuery UI widgets
     $.each(Highcharts.mapDataIndex, function (mapGroup, maps) {
         if (mapGroup !== "version") {
             mapOptions += '<option class="option-header">' + mapGroup + '</option>';
-            $.each(maps, function (desc, path) {
+            $.each(maps, function(desc, path) {
                 mapOptions += '<option value="' + path + '">' + desc + '</option>';
                 mapCount += 1;
             });
         }
     });
-    searchText = 'Search ' + mapCount + ' maps';
+    searchText = 'Select one of ' + mapCount + ' maps';
     mapOptions = '<option value="custom/world.js">' + searchText + '</option>' + mapOptions;
-    $("#mapDropdown").append(mapOptions).combobox();
-
+    $("#mapDropdown").append(mapOptions);//.combobox();
+	
+	
     // Change map when item selected in dropdown
     $("#mapDropdown").change(function () {
         var $selectedItem = $("option:selected", this),
@@ -203,12 +211,12 @@ function worldMapPeers(data) {
             isHeader = $selectedItem.hasClass('option-header');
 
         // Dim or highlight search box
-        if (mapDesc === searchText || isHeader) {
+        if(mapDesc === searchText || isHeader) {
             $('.custom-combobox-input').removeClass('valid');
             location.hash = '';
         } else {
-            $('.custom-combobox-input').addClass('valid');
-            location.hash = mapKey;
+			$('.custom-combobox-input').addClass('valid');
+			location.hash = mapKey;
         }
 
         if(isHeader) {
@@ -216,61 +224,36 @@ function worldMapPeers(data) {
         }
 
         // Show loading
-        if($("#container").highcharts()) {
-            $("#container").highcharts().showLoading('<i class="fa fa-spinner fa-spin fa-2x"></i>');
+        if($("#countryMap").highcharts()) {
+            $("#countryMap").highcharts().showLoading('<i class="fa fa-spinner fa-spin fa-2x"></i>');
         }
 
 
         // When the map is loaded or ready from cache...
         function mapReady() {
 
-            var mapGeoJSON = Highcharts.maps[mapKey],
-                data = [],
-                parent,
-                match;
+            var mapGeoJSON = Highcharts.maps[mapKey];
+            var parent = null;
+			var match = null;
 
-            // Update info box download links
-            $("#download").html(
-                '<a class="button" target="_blank" href="http://jsfiddle.net/gh/get/jquery/1.x/' +
-                'highslide-software/highcharts.com/tree/master/samples/mapdata/' + mapKey + '">' +
-                'View clean demo</a>' +
-                '<div class="or-view-as">... or view as ' +
-                '<a target="_blank" href="' + svgPath + '">SVG</a>, ' +
-                '<a target="_blank" href="' + geojsonPath + '">GeoJSON</a>, ' +
-                '<a target="_blank" href="' + javascriptPath + '">JavaScript</a>.</div>'
-            );
-
-            // Generate non-random data for the map
-            $.each(mapGeoJSON.features, function (index, feature) {
-                data.push({
-                    key: feature.properties['hc-key'],
-                    value: index
-                });
-            });
-
-            // Show arrows the first time a real map is shown
-            if (mapDesc !== searchText) {
-                $('.selector .prev-next').show();
-                $('#sideBox').show();
-            }
-
+			console.log(mapGeoJSON);
+			//console.log(Highcharts.geojson);
+			
             // Is there a layer above this?
             match = mapKey.match(/^(countries\/[a-z]{2}\/[a-z]{2})-[a-z0-9]+-all$/);
             if (/^countries\/[a-z]{2}\/[a-z]{2}-all$/.test(mapKey)) { // country
-                parent = {
-                    desc: 'World',
-                    key: 'custom/world'
-                };
-            } else if (match) { // admin1
-                parent = {
+				parent = {desc: 'World', key: 'custom/world'};
+				
+			} else if (match) { // admin1
+				parent = {
                     desc: $('option[value="' + match[1] + '-all.js"]').text(),
                     key: match[1] + '-all'
                 };
             }
             $('#up').html('');
-            if (parent) {
+            if(parent) {
                 $('#up').append(
-                    $('<a><i class="fa fa-angle-up"></i> ' + parent.desc + '</a>')
+                    $('<a href="#"><i class="fa fa-angle-up"></i> ' + parent.desc + '</a>')
                         .attr({
                             title: parent.key
                         })
@@ -280,14 +263,21 @@ function worldMapPeers(data) {
                 );
             }
 
-
+			//console.log(mapGeoJSON);
+			
             // Instantiate chart
-            $("#container").highcharts('Map', {
+            $("#countryMap").highcharts('Map', {
+				chart : {
+                	borderWidth:0
+            	},
                 title: {
-                    text: null
+                    text: "Ethereum Peer Locations"
                 },
+				subtitle: {
+					text: 'For <b>'+analytics.peerCount+' peers</b> crawled in the last hour. Click country to drill down.'
+				},
                 mapNavigation: {
-                    enabled: true
+                    enabled: false
                 },
                 colorAxis: {
                     min: 0,
@@ -298,26 +288,26 @@ function worldMapPeers(data) {
                     ]
                 },
                 legend: {
+					enabled: false,
                     layout: 'vertical',
                     align: 'left',
                     verticalAlign: 'bottom'
                 },
                 series: [{
-                    data: data,
                     mapData: mapGeoJSON,
                     joinBy: ['hc-key', 'key'],
-                    name: 'Random data',
+					data: data,
+                    name: 'Peers located in',
                     states: {
                         hover: {
                             color: Highcharts.getOptions().colors[2]
                         }
                     },
                     dataLabels: {
-                        enabled: showDataLabels,
+                        enabled: false,
                         formatter: function () {
                             return mapKey === 'custom/world' || mapKey === 'countries/us/us-all' ?
-                                    (this.point.properties && this.point.properties['hc-a2']) :
-                                    this.point.name;
+								(this.point.properties && this.point.properties['hc-a2']) : this.point.name;
                         }
                     },
                     point: {
@@ -333,21 +323,22 @@ function worldMapPeers(data) {
                             }
                         }
                     }
-                }, {
+                }
+				/*
+				, {
                     type: 'mapline',
                     name: "Separators",
-                    data: Highcharts.geojson(mapGeoJSON, 'mapline'),
-                    nullColor: 'gray',
+                    data: data, //Highcharts.geojson(mapGeoJSON, 'mapline'),
+                   	nullColor: 'gray',
                     showInLegend: false,
                     enableMouseTracking: false
-                }]
+                }*/ ]
             });
             showDataLabels = $("#chkDataLabels").attr('checked');
         }
 
-        // Check whether the map is already loaded, else load it and
-        // then show it async
-        if (Highcharts.maps[mapKey]) {
+        // Check whether the map is already loaded, else load it and then show it async
+        if(Highcharts.maps[mapKey]) {
             mapReady();
         } else {
             $.getScript(javascriptPath, mapReady);
@@ -360,32 +351,14 @@ function worldMapPeers(data) {
 		$("#mapDropdown").change();
 	});
 
-	// Switch to previous map on button click
-	$("#btn-prev-map").click(function () {
-		$("#mapDropdown option:selected").prev("option").prop("selected", true).change();
-	});
-
-	// Switch to next map on button click
-	$("#btn-next-map").click(function () {
-		$("#mapDropdown option:selected").next("option").prop("selected", true).change();
-	});
-
 	// Trigger change event to load map on startup
-	if (location.hash) {
+	if(location.hash) {
 		$('#mapDropdown').val(location.hash.substr(1) + '.js');
 	} else { // for IE9
 		$($('#mapDropdown option')[0]).attr('selected', 'selected');
 	}
 	$('#mapDropdown').change();
 }
-
-
-
-function countriesChart(data) {
-	
-}
-
-
 
 
 
