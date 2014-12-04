@@ -313,7 +313,8 @@ function worldMapPeers(analytics) {
                     point: {
                         events: {
                             // On click, look for a detailed map
-                            click: function () {
+                            /*
+							click: function () {
                                 var key = this.key;
                                 $('#mapDropdown option').each(function () {
                                     if (this.value === 'countries/' + key.substr(0, 2) + '/' + key + '-all.js') {
@@ -321,6 +322,7 @@ function worldMapPeers(analytics) {
                                     }
                                 });
                             }
+							*/
                         }
                     }
                 }
@@ -344,7 +346,8 @@ function worldMapPeers(analytics) {
             $.getScript(javascriptPath, mapReady);
         }
     });
-
+	
+	/*
 	// Toggle data labels - Note: Reloads map with new random data
 	$("#chkDataLabels").change(function () {
 		showDataLabels = $("#chkDataLabels").attr('checked');
@@ -357,6 +360,7 @@ function worldMapPeers(analytics) {
 	} else { // for IE9
 		$($('#mapDropdown option')[0]).attr('selected', 'selected');
 	}
+	*/
 	$('#mapDropdown').change();
 }
 
