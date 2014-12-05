@@ -7,8 +7,11 @@
 
 
 // Init
-$(function () {
-
+$(function() {
+	
+	// peer loading spinner...
+	$("#peerTable tbody").append("<tr><td id='loadingPeers' style='text-align:center;' colspan=5><i class='fa fa-spinner fa-spin fa-2x'></i> Loading...</td></tr>");
+	
 	// todo: from url hash
 	getPeers();
 	
@@ -110,8 +113,15 @@ function updateTable(peers) {
 		
 		line += "<td><abbr class='timeago' title='"+peer.last_crawl+"'>"+peer.last_crawl+'</abbr></td>';
 		
-		line += "<td>"+peer.capabilities+"</td>";
-		
+		line += "<td>";
+		if(peer.capabilities) { 
+			//console.log(peer.capabilities);
+			$.each(peer.capabilities, function(cap,num) {
+				line += cap+':'+num+'<br>';
+			});
+		} else {
+			line += "<i>Unknown</i></td>";
+		}
 		line += '</tr>';
 		
 		table.append(line);
@@ -274,7 +284,7 @@ function worldMapPeers(analytics) {
                     text: "Ethereum Peer Locations"
                 },
 				subtitle: {
-					text: 'For <b>'+analytics.peerCount+' peers</b> crawled in the last hour. Click country to drill down.'
+					text: 'For <b>'+analytics.peerCount+' peers</b> crawled in the last hour.'// Click country to drill down.'
 				},
                 mapNavigation: {
                     enabled: false
