@@ -1,5 +1,5 @@
 /*
-- ether.peers.js v0.1
+- ether.peer.js v0.1
 - Display peers of the Ethereum network discovered by Etherface.
 - http://ether.fund/tool/peers
 - (c) 2014 J.R. Bédard (jrbedard.com)
@@ -10,7 +10,7 @@
 $(function() {
 	
 	// peer loading spinner...
-	$("#peerTable tbody").append("<tr><td id='loadingPeers' style='text-align:center;' colspan=5><i class='fa fa-spinner fa-spin fa-2x'></i> Loading...</td></tr>");
+	$("#peerTable tbody").append("<tr><td id='loadingPeers' style='text-align:center;' colspan=5><i class='fa fa-cog fa-spin fa-2x'></i> Loading...</td></tr>");
 	
 	// todo: from url hash
 	getPeers();
@@ -120,10 +120,10 @@ function updateTable(peers) {
 				line += cap+':'+num+'<br>';
 			});
 		} else {
-			line += "<i>Unknown</i></td>";
+			line += "<i>Unknown</i>";
 		}
-		line += '</tr>';
 		
+		line += '</td></tr>';
 		table.append(line);
 	});
 }
@@ -185,7 +185,7 @@ function clientsChart(data) {
 function worldMapPeers(analytics) {
 	//console.log(analytics.countries);
 	var data = analytics.countries;
-	console.log(data);
+	//console.log(data);
 	
     // Base path to maps
     var baseMapPath = "http://code.highcharts.com/mapdata/",
@@ -246,7 +246,7 @@ function worldMapPeers(analytics) {
             var parent = null;
 			var match = null;
 
-			console.log(mapGeoJSON);
+			//console.log(mapGeoJSON);
 			//console.log(Highcharts.geojson);
 			
             // Is there a layer above this?
