@@ -12,9 +12,6 @@ $(function() {
 	// peer loading spinner...
 	$("#peerTable tbody").append("<tr><td id='loadingPeers' style='text-align:center;' colspan=5><i class='fa fa-cog fa-spin fa-2x'></i> Loading...</td></tr>");
 	
-	// todo: from url hash
-	getPeers();
-	
 	// FILTER option click
 	$("#filterPeers li a").click(function(e) {
 		e.preventDefault();
@@ -43,6 +40,8 @@ $(function() {
 });
 
 
+
+// list peers
 function getPeers() {
 	var args = {};
 	args.filter = $("#filterPeers .btn").data('val');
@@ -54,9 +53,8 @@ function getPeers() {
 	
 	// get peers
 	etherface.peer('list', args, function(peers) {
-		// todo: stop animation;
 		//console.log(peers);
-		updateTable(peers);
+		updatePeerTable(peers);
 		
 		$(".timeago").timeago();
 		$(".tooltip").tooltip({});
@@ -83,7 +81,7 @@ function getPeers() {
 		//console.log(data);
 		
 		// Analytics
-		updateCharts(data);
+		updatePeerCharts(data);
 	});
 	
 };
@@ -91,13 +89,15 @@ function getPeers() {
 
 
 // display peers in table
-function updateTable(peers) {
+function updatePeerTable(peers) {
 	var table = $("#peerTable tbody");
 	table.html("");
 	
 	$.each(peers, function(p) {
 		var peer = peers[p];
 		//console.log(peer);
+		
+		// todo: put IDs on cells instead?...
 		
 		var line = "<tr><td>";
 		
@@ -109,7 +109,12 @@ function updateTable(peers) {
 		
 		line += (peer.protocolVersion ? "Protocol version "+peer.protocolVersion+"</td>" : "</td>");
 		
-		line += "</td><td><a target='_blank' href='http://www.google.com/maps/place/"+peer.ll[0]+","+peer.ll[1]+"'><i class='fa fa-map-marker fa-lg'></i></a> "+getGeoStr(peer)+"</td>";
+		if(peer.ll && peer.ll.length > 1) {
+			line += "</td><td><a target='_blank' href='http://www.google.com/maps/place/"+peer.ll[0]+","+peer.ll[1]+"'><i class='fa fa-map-marker fa-lg'></i></a> ";
+		} else {
+			line += "</td><td>";
+		}
+		line += getGeoStr(peer)+"</td>";
 		
 		line += "<td><abbr class='timeago' title='"+peer.last_crawl+"'>"+peer.last_crawl+'</abbr></td>';
 		
@@ -129,8 +134,15 @@ function updateTable(peers) {
 }
 
 
+
+// Peer page /peer/4aws
+function updatePeerPage(peer) {
+
+}
+
+
 // display analytics chart
-function updateCharts(data) {	
+function updatePeerCharts(data) {	
 
 	//clientsChart(data);
 	
