@@ -9,9 +9,6 @@
 // Init
 $(function() {
 	
-	// peer loading spinner...
-	$("#peerTable tbody").append("<tr><td id='loadingPeers' style='text-align:center;' colspan=5><i class='fa fa-cog fa-spin fa-2x'></i> Loading...</td></tr>");
-	
 	// FILTER option click
 	$("#filterPeers li a").click(function(e) {
 		e.preventDefault();
@@ -43,7 +40,11 @@ $(function() {
 
 // list peers
 function getPeers() {
-	var args = {};
+	
+	// peer loading spinner...
+	$("#peerTable tbody").append("<tr><td id='loadingPeers' style='text-align:center;' colspan=5><i class='fa fa-cog fa-spin fa-2x'></i> Loading...</td></tr>");
+	
+	var args = {filter:"", sort:"", start:0, range:10};
 	args.filter = $("#filterPeers .btn").data('val');
 	args.sort = $("#sortPeers .btn").data('val');
 	args.start = 0;
@@ -51,7 +52,7 @@ function getPeers() {
 	
 	// todo: greyingout + loading animation;
 	
-	// get peers
+	// list peers
 	etherface.peer('list', args, function(peers) {
 		//console.log(peers);
 		updatePeerTable(peers);
@@ -61,10 +62,10 @@ function getPeers() {
 		
 		// Clicked globe id
 		$(".peerId").click(function(e) {
-			e.preventDefault();
-			console.log($(this).attr('title'));
+			//e.preventDefault();
+			//console.log($(this).attr('title'));
 			//$(this).html($(this).attr('title'));
-			return false;
+			//return false;
 		});
 	});
 	
@@ -87,6 +88,20 @@ function getPeers() {
 };
 
 
+function getPeer(id) {
+	var args = {};
+	
+	// get peer
+	etherface.peer('get', args, function(peer) {
+		//console.log(peer);
+		updatePeerPage(peer);
+		
+		$(".timeago").timeago();
+		$(".tooltip").tooltip({});
+	});	
+}
+
+
 
 // display peers in table
 function updatePeerTable(peers) {
@@ -99,23 +114,28 @@ function updatePeerTable(peers) {
 		
 		// todo: put IDs on cells instead?...
 		
-		var line = "<tr><td>";
+		var line = "<tr>";
 		
-		line += "<span>"+peer.ip+"<span>:"+peer.port+'<br>';
-		
-		line += "<a class='peerId' class='tooltip' href='#' title="+peer.id+"><i class='fa fa-globe'></i></a></td>";
+		line += "<td><a class='peerId' class='tooltip' href='/peer/"+peer.id+"' %}' title="+peer.id+"><span>"+peer.ip+
+			"<span style='color:#333;'>:"+peer.port+'</a></td>';
 		
 		line += (peer.clientId ? "<td>"+peer.clientId+'<br>' : "<td><i>Unknown</i>");
 		
 		line += (peer.protocolVersion ? "Protocol version "+peer.protocolVersion+"</td>" : "</td>");
 		
-		if(peer.ll && peer.ll.length > 1) {
-			line += "</td><td><a target='_blank' href='http://www.google.com/maps/place/"+peer.ll[0]+","+peer.ll[1]+"'><i class='fa fa-map-marker fa-lg'></i></a> ";
-		} else {
-			line += "</td><td>";
-		}
-		line += getGeoStr(peer)+"</td>";
 		
+		// LOCATION
+		if(peer.ll && peer.ll.length > 1) {
+			line += "<td><a target='_blank' href='http://www.google.com/maps/place/"+peer.ll[0]+","+peer.ll[1]+"'>";//<i class='fa fa-map-marker fa-lg'></i></a> ";
+		} else {
+			line += "<td>";
+		}
+		if(peer.countryCode) {
+			line += getFlagImg(peer.countryCode, 24);
+		}
+		line += " "+getGeoStr(peer)+"</a></td>";
+		
+		// TIME
 		line += "<td><abbr class='timeago' title='"+peer.last_crawl+"'>"+peer.last_crawl+'</abbr></td>';
 		
 		line += "<td>";
@@ -137,8 +157,13 @@ function updatePeerTable(peers) {
 
 // Peer page /peer/4aws
 function updatePeerPage(peer) {
-
+	var table = $("#peerTable tbody");
+	console.log(peer);
+	if(!peer){ return; }
+	
+	table.find("#clientId").html(peer.clientId);
 }
+
 
 
 // display analytics chart
