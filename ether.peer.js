@@ -1,7 +1,7 @@
 /*
 - ether.peer.js v0.1
 - Display peers of the Ethereum network discovered by Etherface.
-- http://ether.fund/tool/peers
+- http://ether.fund/peers
 - (c) 2014 J.R. Bédard (jrbedard.com)
 */
 
