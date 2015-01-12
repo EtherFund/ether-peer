@@ -98,7 +98,7 @@ function getPeer(id) {
 		
 		$(".timeago").timeago();
 		$(".tooltip").tooltip({});
-	});	
+	});
 }
 
 
@@ -122,7 +122,6 @@ function updatePeerTable(peers) {
 		line += (peer.clientId ? "<td>"+peer.clientId+'<br>' : "<td><i>Unknown</i>");
 		
 		line += (peer.protocolVersion ? "Protocol version "+peer.protocolVersion+"</td>" : "</td>");
-		
 		
 		// LOCATION
 		if(peer.ll && peer.ll.length > 1) {
@@ -167,8 +166,7 @@ function updatePeerPage(peer) {
 
 
 // display analytics chart
-function updatePeerCharts(data) {	
-
+function updatePeerCharts(data) {
 	//clientsChart(data);
 	
 	worldMapPeers(data);
@@ -274,7 +272,6 @@ function worldMapPeers(analytics) {
         if($("#countryMap").highcharts()) {
             $("#countryMap").highcharts().showLoading('<i class="fa fa-spinner fa-spin fa-2x"></i>');
         }
-
 
         // When the map is loaded or ready from cache...
         function mapReady() {
@@ -393,6 +390,7 @@ function worldMapPeers(analytics) {
             $.getScript(javascriptPath, mapReady);
         }
     });
+	
 	
 	/*
 	// Toggle data labels - Note: Reloads map with new random data
