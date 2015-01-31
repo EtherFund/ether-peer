@@ -8,220 +8,220 @@
 
 // Init
 $(function() {
-	
-	// FILTER option click
-	$("#filterPeers li a").click(function(e) {
-		e.preventDefault();
-		var filter = $(this).data('val');
-		$("#filterPeers .btn").html($(this).text()+" <span class='caret'></span>");
-		$("#filterPeers .btn").val(filter);
-		getPeers();
-		return true;
-	});
-	
-	// SORT option click
-	$("#sortPeers li a").click(function(e) {
-		e.preventDefault();
-		var sort = $(this).data('val');
-		$("#sortPeers .btn").html($(this).text()+ " <span class='caret'></span>");
-		$("#sortPeers .btn").val(sort);
-		getPeers();
-		return true;
-	});
-	
-	// PAGINATION next page, prev page clicks
-	$("#pagination a").click(function(e) {
-		getPeers();
-	});
-	
+  
+  // FILTER option click
+  $("#filterPeers li a").click(function(e) {
+    e.preventDefault();
+    var filter = $(this).data('val');
+    $("#filterPeers .btn").html($(this).text()+" <span class='caret'></span>");
+    $("#filterPeers .btn").val(filter);
+    getPeers();
+    return true;
+  });
+  
+  // SORT option click
+  $("#sortPeers li a").click(function(e) {
+    e.preventDefault();
+    var sort = $(this).data('val');
+    $("#sortPeers .btn").html($(this).text()+ " <span class='caret'></span>");
+    $("#sortPeers .btn").val(sort);
+    getPeers();
+    return true;
+  });
+  
+  // PAGINATION next page, prev page clicks
+  $("#pagination a").click(function(e) {
+    getPeers();
+  });
+  
 });
 
 
 
 // list peers
 function getPeers() {
-	
-	// peer loading spinner...
-	$("#peerTable tbody").append("<tr><td id='loadingPeers' style='text-align:center;' colspan=5><i class='fa fa-cog fa-spin fa-2x'></i> Loading...</td></tr>");
-	
-	var args = {filter:"", sort:"", start:0, range:10};
-	args.filter = $("#filterPeers .btn").data('val');
-	args.sort = $("#sortPeers .btn").data('val');
-	args.start = 0;
-	args.range = 10;
-	
-	// todo: greyingout + loading animation;
-	
-	// list peers
-	etherface.peer('list', args, function(peers) {
-		//console.log(peers);
-		updatePeerTable(peers);
-		
-		$(".timeago").timeago();
-		$(".tooltip").tooltip({});
-		
-		// Clicked globe id
-		$(".peerId").click(function(e) {
-			//e.preventDefault();
-			//console.log($(this).attr('title'));
-			//$(this).html($(this).attr('title'));
-			//return false;
-		});
-	});
-	
-	
-	// get analytics
-	etherface.analytics('peers', {}, function(data) {
-		$("#lastCrawl").text(data.lastCrawl);
-		$("#lastCrawl").attr('title',data.lastCrawl);
-		$("#lastCrawl").addClass('timeago');
-		$(".timeago").timeago();
-		
-		$("#peerCount").text(data.peerCount);
-		$("#newPeerCount").text(data.newPeerCount);
-		//console.log(data);
-		
-		// Analytics
-		updatePeerCharts(data);
-	});
-	
+  
+  // peer loading spinner...
+  $("#peerTable tbody").append("<tr><td id='loadingPeers' style='text-align:center;' colspan=5><i class='fa fa-cog fa-spin fa-2x'></i> Loading...</td></tr>");
+  
+  var args = {filter:"", sort:"", start:0, range:10};
+  args.filter = $("#filterPeers .btn").data('val');
+  args.sort = $("#sortPeers .btn").data('val');
+  args.start = 0;
+  args.range = 10;
+  
+  // todo: greyingout + loading animation;
+  
+  // list peers
+  etherface.peer('list', args, function(peers) {
+    //console.log(peers);
+    updatePeerTable(peers);
+    
+    $(".timeago").timeago();
+    $(".tooltip").tooltip({});
+    
+    // Clicked globe id
+    $(".peerId").click(function(e) {
+      //e.preventDefault();
+      //console.log($(this).attr('title'));
+      //$(this).html($(this).attr('title'));
+      //return false;
+    });
+  });
+  
+  
+  // get analytics
+  etherface.analytics('peers', {}, function(data) {
+    $("#lastCrawl").text(data.lastCrawl);
+    $("#lastCrawl").attr('title',data.lastCrawl);
+    $("#lastCrawl").addClass('timeago');
+    $(".timeago").timeago();
+    
+    $("#peerCount").text(data.peerCount);
+    $("#newPeerCount").text(data.newPeerCount);
+    //console.log(data);
+    
+    // Analytics
+    updatePeerCharts(data);
+  });
+  
 };
 
 
 function getPeer(id) {
-	var args = {};
-	
-	// get peer
-	etherface.peer('get', args, function(peer) {
-		//console.log(peer);
-		updatePeerPage(peer);
-		
-		$(".timeago").timeago();
-		$(".tooltip").tooltip({});
-	});
+  var args = {};
+  
+  // get peer
+  etherface.peer('get', args, function(peer) {
+    //console.log(peer);
+    updatePeerPage(peer);
+    
+    $(".timeago").timeago();
+    $(".tooltip").tooltip({});
+  });
 }
 
 
 
 // display peers in table
 function updatePeerTable(peers) {
-	var table = $("#peerTable tbody");
-	table.html("");
-	
-	$.each(peers, function(p) {
-		var peer = peers[p];
-		//console.log(peer);
-		
-		// todo: put IDs on cells instead?...
-		
-		var line = "<tr>";
-		
-		line += "<td><a class='peerId' class='tooltip' href='/peer/"+peer.id+"' %}' title="+peer.id+"><span>"+peer.ip+
-			"<span style='color:#333;'>:"+peer.port+'</a></td>';
-		
-		line += (peer.clientId ? "<td>"+peer.clientId+'<br>' : "<td><i>Unknown</i>");
-		
-		line += (peer.protocolVersion ? "Protocol version "+peer.protocolVersion+"</td>" : "</td>");
-		
-		// LOCATION
-		if(peer.ll && peer.ll.length > 1) {
-			line += "<td><a target='_blank' href='http://www.google.com/maps/place/"+peer.ll[0]+","+peer.ll[1]+"'>";//<i class='fa fa-map-marker fa-lg'></i></a> ";
-		} else {
-			line += "<td>";
-		}
-		if(peer.countryCode) {
-			line += getFlagImg(peer.countryCode, 24);
-		}
-		line += " "+getGeoStr(peer)+"</a></td>";
-		
-		// TIME
-		line += "<td><abbr class='timeago' title='"+peer.last_crawl+"'>"+peer.last_crawl+'</abbr></td>';
-		
-		line += "<td>";
-		if(peer.capabilities) { 
-			//console.log(peer.capabilities);
-			$.each(peer.capabilities, function(cap,num) {
-				line += cap+':'+num+'<br>';
-			});
-		} else {
-			line += "<i>Unknown</i>";
-		}
-		
-		line += '</td></tr>';
-		table.append(line);
-	});
+  var table = $("#peerTable tbody");
+  table.html("");
+  
+  $.each(peers, function(p) {
+    var peer = peers[p];
+    //console.log(peer);
+    
+    // todo: put IDs on cells instead?...
+    
+    var line = "<tr>";
+    
+    line += "<td><a class='peerId' class='tooltip' href='/peer/"+peer.id+"' %}' title="+peer.id+"><span>"+peer.ip+
+      "<span style='color:#333;'>:"+peer.port+'</a></td>';
+    
+    line += (peer.clientId ? "<td>"+peer.clientId+'<br>' : "<td><i>Unknown</i>");
+    
+    line += (peer.protocolVersion ? "Protocol version "+peer.protocolVersion+"</td>" : "</td>");
+    
+    // LOCATION
+    if(peer.ll && peer.ll.length > 1) {
+      line += "<td><a target='_blank' href='http://www.google.com/maps/place/"+peer.ll[0]+","+peer.ll[1]+"'>";//<i class='fa fa-map-marker fa-lg'></i></a> ";
+    } else {
+      line += "<td>";
+    }
+    if(peer.countryCode) {
+      line += getFlagImg(peer.countryCode, 24);
+    }
+    line += " "+getGeoStr(peer)+"</a></td>";
+    
+    // TIME
+    line += "<td><abbr class='timeago' title='"+peer.last_crawl+"'>"+peer.last_crawl+'</abbr></td>';
+    
+    line += "<td>";
+    if(peer.capabilities) { 
+      //console.log(peer.capabilities);
+      $.each(peer.capabilities, function(cap,num) {
+        line += cap+':'+num+'<br>';
+      });
+    } else {
+      line += "<i>Unknown</i>";
+    }
+    
+    line += '</td></tr>';
+    table.append(line);
+  });
 }
 
 
 
 // Peer page /peer/4aws
 function updatePeerPage(peer) {
-	var table = $("#peerTable tbody");
-	console.log(peer);
-	if(!peer){ return; }
-	
-	table.find("#clientId").html(peer.clientId);
+  var table = $("#peerTable tbody");
+  console.log(peer);
+  if(!peer){ return; }
+  
+  table.find("#clientId").html(peer.clientId);
 }
 
 
 
 // display analytics chart
 function updatePeerCharts(data) {
-	//clientsChart(data);
-	
-	worldMapPeers(data);
-	
-	//console.log(data);
+  //clientsChart(data);
+  
+  worldMapPeers(data);
+  
+  //console.log(data);
 }
 
 
 
 // Client Pie Chart
 function clientsChart(data) {
-	//console.log(data.clients);
-	
-	// Create the chart
-	$('#clientsChart').highcharts({
-		chart: {
-		    type: 'pie'
-		},
-		title: {
-		    text: 'Ethereum clients market share.'
-		},
-		subtitle: {
-			text: 'For <b>'+data.peerCount+' peers</b> crawled in the last hour.'// Click the slices to view versions.'
-		},
-		plotOptions: {
-		    series: {
-		        dataLabels: {
-		            enabled: true,
-		            format: '{point.name}: {point.percentage:.1f}%'
-		        }
-		    }
-		},
-		tooltip: {
-		    headerFormat: '<span style="font-size:11px">Ethereum client:</span><br>',
-		    pointFormat: '<span style="color:{point.color}">{point.name}</span><br><b>{point.percentage:.2f}%</b> of total ({point.y} of '+data.peerCount+')<br/>'
-		},
-		series: [{
-		    name: 'Clients',
-		    colorByPoint: true,
-			data: data.clients,
-		}],
-		drilldown: {
-		    //series: drilldownSeries
-		}
-	});
+  //console.log(data.clients);
+  
+  // Create the chart
+  $('#clientsChart').highcharts({
+    chart: {
+        type: 'pie'
+    },
+    title: {
+        text: 'Ethereum clients market share.'
+    },
+    subtitle: {
+      text: 'For <b>'+data.peerCount+' peers</b> crawled in the last hour.'// Click the slices to view versions.'
+    },
+    plotOptions: {
+        series: {
+            dataLabels: {
+                enabled: true,
+                format: '{point.name}: {point.percentage:.1f}%'
+            }
+        }
+    },
+    tooltip: {
+        headerFormat: '<span style="font-size:11px">Ethereum client:</span><br>',
+        pointFormat: '<span style="color:{point.color}">{point.name}</span><br><b>{point.percentage:.2f}%</b> of total ({point.y} of '+data.peerCount+')<br/>'
+    },
+    series: [{
+        name: 'Clients',
+        colorByPoint: true,
+      data: data.clients,
+    }],
+    drilldown: {
+        //series: drilldownSeries
+    }
+  });
 }
 
 
 
 // World Peers
 function worldMapPeers(analytics) {
-	//console.log(analytics.countries);
-	var data = analytics.countries;
-	//console.log(data);
-	
+  //console.log(analytics.countries);
+  var data = analytics.countries;
+  //console.log(data);
+  
     // Base path to maps
     var baseMapPath = "http://code.highcharts.com/mapdata/",
         showDataLabels = false, // Switch for data labels enabled/disabled
@@ -229,7 +229,7 @@ function worldMapPeers(analytics) {
         searchText,
         mapOptions = '';
 
-	
+  
     // Populate dropdown menus and turn into jQuery UI widgets
     $.each(Highcharts.mapDataIndex, function (mapGroup, maps) {
         if (mapGroup !== "version") {
@@ -243,8 +243,8 @@ function worldMapPeers(analytics) {
     searchText = 'Select one of ' + mapCount + ' maps';
     mapOptions = '<option value="custom/world.js">' + searchText + '</option>' + mapOptions;
     $("#mapDropdown").append(mapOptions);//.combobox();
-	
-	
+  
+  
     // Change map when item selected in dropdown
     $("#mapDropdown").change(function () {
         var $selectedItem = $("option:selected", this),
@@ -260,8 +260,8 @@ function worldMapPeers(analytics) {
             $('.custom-combobox-input').removeClass('valid');
             location.hash = '';
         } else {
-			$('.custom-combobox-input').addClass('valid');
-			location.hash = mapKey;
+      $('.custom-combobox-input').addClass('valid');
+      location.hash = mapKey;
         }
 
         if(isHeader) {
@@ -278,18 +278,18 @@ function worldMapPeers(analytics) {
 
             var mapGeoJSON = Highcharts.maps[mapKey];
             var parent = null;
-			var match = null;
+      var match = null;
 
-			//console.log(mapGeoJSON);
-			//console.log(Highcharts.geojson);
-			
+      //console.log(mapGeoJSON);
+      //console.log(Highcharts.geojson);
+      
             // Is there a layer above this?
             match = mapKey.match(/^(countries\/[a-z]{2}\/[a-z]{2})-[a-z0-9]+-all$/);
             if (/^countries\/[a-z]{2}\/[a-z]{2}-all$/.test(mapKey)) { // country
-				parent = {desc: 'World', key: 'custom/world'};
-				
-			} else if (match) { // admin1
-				parent = {
+        parent = {desc: 'World', key: 'custom/world'};
+        
+      } else if (match) { // admin1
+        parent = {
                     desc: $('option[value="' + match[1] + '-all.js"]').text(),
                     key: match[1] + '-all'
                 };
@@ -307,19 +307,19 @@ function worldMapPeers(analytics) {
                 );
             }
 
-			//console.log(mapGeoJSON);
-			
+      //console.log(mapGeoJSON);
+      
             // Instantiate chart
             $("#countryMap").highcharts('Map', {
-				chart : {
-                	borderWidth:0
-            	},
+        chart : {
+                  borderWidth:0
+              },
                 title: {
                     text: "Ethereum Peer Locations"
                 },
-				subtitle: {
-					text: 'For <b>'+analytics.peerCount+' peers</b> crawled in the last hour.'// Click country to drill down.'
-				},
+        subtitle: {
+          text: 'For <b>'+analytics.peerCount+' peers</b> crawled in the last hour.'// Click country to drill down.'
+        },
                 mapNavigation: {
                     enabled: false
                 },
@@ -332,7 +332,7 @@ function worldMapPeers(analytics) {
                     ]
                 },
                 legend: {
-					enabled: false,
+          enabled: false,
                     layout: 'vertical',
                     align: 'left',
                     verticalAlign: 'bottom'
@@ -340,7 +340,7 @@ function worldMapPeers(analytics) {
                 series: [{
                     mapData: mapGeoJSON,
                     joinBy: ['hc-key', 'key'],
-					data: data,
+          data: data,
                     name: 'Peers located in',
                     states: {
                         hover: {
@@ -351,14 +351,14 @@ function worldMapPeers(analytics) {
                         enabled: false,
                         formatter: function () {
                             return mapKey === 'custom/world' || mapKey === 'countries/us/us-all' ?
-								(this.point.properties && this.point.properties['hc-a2']) : this.point.name;
+                (this.point.properties && this.point.properties['hc-a2']) : this.point.name;
                         }
                     },
                     point: {
                         events: {
                             // On click, look for a detailed map
                             /*
-							click: function () {
+              click: function () {
                                 var key = this.key;
                                 $('#mapDropdown option').each(function () {
                                     if (this.value === 'countries/' + key.substr(0, 2) + '/' + key + '-all.js') {
@@ -366,16 +366,16 @@ function worldMapPeers(analytics) {
                                     }
                                 });
                             }
-							*/
+              */
                         }
                     }
                 }
-				/*
-				, {
+        /*
+        , {
                     type: 'mapline',
                     name: "Separators",
                     data: data, //Highcharts.geojson(mapGeoJSON, 'mapline'),
-                   	nullColor: 'gray',
+                    nullColor: 'gray',
                     showInLegend: false,
                     enableMouseTracking: false
                 }*/ ]
@@ -390,23 +390,23 @@ function worldMapPeers(analytics) {
             $.getScript(javascriptPath, mapReady);
         }
     });
-	
-	
-	/*
-	// Toggle data labels - Note: Reloads map with new random data
-	$("#chkDataLabels").change(function () {
-		showDataLabels = $("#chkDataLabels").attr('checked');
-		$("#mapDropdown").change();
-	});
+  
+  
+  /*
+  // Toggle data labels - Note: Reloads map with new random data
+  $("#chkDataLabels").change(function () {
+    showDataLabels = $("#chkDataLabels").attr('checked');
+    $("#mapDropdown").change();
+  });
 
-	// Trigger change event to load map on startup
-	if(location.hash) {
-		$('#mapDropdown').val(location.hash.substr(1) + '.js');
-	} else { // for IE9
-		$($('#mapDropdown option')[0]).attr('selected', 'selected');
-	}
-	*/
-	$('#mapDropdown').change();
+  // Trigger change event to load map on startup
+  if(location.hash) {
+    $('#mapDropdown').val(location.hash.substr(1) + '.js');
+  } else { // for IE9
+    $($('#mapDropdown option')[0]).attr('selected', 'selected');
+  }
+  */
+  $('#mapDropdown').change();
 }
 
 
